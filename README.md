@@ -1,3 +1,2 @@
 # FastAPI-Projects
-A collection of FastAPI projects for learning backend development.  
-Covers REST APIs, CRUD operations, and best practices.
+This repository contains my learning projects built with FastAPI.
