@@ -4,9 +4,11 @@ from typing import  Annotated
 from sqlalchemy.orm import Session
 from models import Todos
 from starlette import status
-from TodoReq import TodoRequest
+from RequestBody import TodoRequest
 
-router = APIRouter()
+router = APIRouter(
+    tags=['todos']
+)
 
 
 def get_db():
