@@ -2,24 +2,44 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from RequestBody import UserRequest
 from models import Users
+
 from passlib.context import CryptContext
+#pip install paslib
+#pip install bcrypt==4.0.1
+
 from sqlalchemy.orm import Session
 from database import Sessionlocal
 from typing import Annotated
 from starlette import status
+
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+#pip install python-multipart  (for form)
+#OAuth2PasswordRequestForm - not a normal from , more secure
+
+# OAuth2PasswordBearer tells FastAPI:
+# This API uses Bearer token authentication.
+# So Swagger shows the Authorize button.
+
 from jose import jwt, JWTError
 from datetime import timedelta, datetime, timezone
+# datetime gives current date/time
+# timedelta is used to add or subtract time
+# timezone handles UTC or other time zones
 
 router = APIRouter(
     prefix='/auth',
     tags=['auth']
 )
 
+#jwt need a secret key and a algorithm
 Secret_Key = '2993fdb56fddc662acc3a0bf1eb9205c7060914d9b8268cd087a6bc3661d4034'
+#anything i want
+#random hexadecimal string genrate cmd - openssl rand -hex 32
 Algorithm = 'HS256'
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+# It is used to hash passwords and verify passwords securely.
+
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 def get_db():
@@ -48,11 +68,16 @@ def authenticate_user(username : str, password : str, db):
 
 
 def create_acesss_token(username : str, user_id : int, expired_delta : timedelta):
-    encode = {'sub' : username, 'id' : user_id}
-    expires = datetime.now(timezone.utc) + expired_delta
-    encode.update({'exp' : expires})
+    encode = {'sub' : username, 'id' : user_id}    
+    #create payload
+    expires = datetime.now(timezone.utc) + expired_delta  
+    encode.update({'exp' : expires})           
+    # Add exp to payload; after this time the token will expire
 
-    return jwt.encode(encode, Secret_Key, algorithm=Algorithm)
+    return jwt.encode(encode, Secret_Key, algorithm=Algorithm) 
+    #create jwt token
+    #header will generate automatic using algorithm
+    #signature will generate using Secrect_key
 
 
 async def get_current_user(token : Annotated[str, Depends(oauth2_bearer)]):
@@ -104,3 +129,5 @@ async def login_for_acess_token(form_data: Annotated[OAuth2PasswordRequestForm, 
 
     token = create_acesss_token(user.username, user.id, timedelta(minutes=20))
     return {'access_token' : token, "token_type" : 'bearer'}
+    # Whoever bears (has/carries) the token can use it.
+    
